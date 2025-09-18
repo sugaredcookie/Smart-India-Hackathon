@@ -224,7 +224,7 @@ const LandingPage = () => {
         type: "info"
         });
 
-        const response = await fetch('http://localhost:5000/api/beta', {
+        const response = await fetch('https://smart-india-hackathon-816r.onrender.com/api/beta', {
         method: 'POST',
         headers: {
             "Content-Type": "application/json"
@@ -294,7 +294,7 @@ const LandingPage = () => {
         type: "info"
       });
 
-      const response = await fetch('http://localhost:5000/api/contact', {
+      const response = await fetch('https://smart-india-hackathon-816r.onrender.com/api/contact', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json"

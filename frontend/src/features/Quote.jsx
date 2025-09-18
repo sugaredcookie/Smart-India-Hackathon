@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Quote.css";
-const backendURL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000';
+const backendURL = process.env.NODE_ENV === 'production' ? '' : 'https://smart-india-hackathon-816r.onrender.com';
 
 const Quote = () => {
   const navigate = useNavigate();
@@ -89,7 +89,7 @@ useEffect(() => {
       // Fetch fresh user data from API
       try {
         console.log("Fetching user data from /api/auth/me");
-        const backendUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000';
+        const backendUrl = process.env.NODE_ENV === 'production' ? '' : 'https://smart-india-hackathon-816r.onrender.com';
         const response = await axios.get(`${backendUrl}/api/auth/me`);
         // console.log("Full API response:", response);
         

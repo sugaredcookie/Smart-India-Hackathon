@@ -42,7 +42,7 @@ const CommunityHub = () => {
     if (window._env_ && window._env_.REACT_APP_API_URL) {
       return window._env_.REACT_APP_API_URL;
     }
-    return "http://localhost:5000";
+    return "https://smart-india-hackathon-816r.onrender.com";
   };
 
   // Scroll to bottom of messages

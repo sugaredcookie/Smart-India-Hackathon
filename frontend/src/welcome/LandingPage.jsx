@@ -418,7 +418,7 @@ const LandingPage = () => {
                 ) : (
                   <>
                     <button onClick={redirectToSignup} className="cta-btn primary">Get Started</button>
-                    <button className="cta-btn secondary">Watch Video</button>
+                    {/* <button className="cta-btn secondary">Watch Video</button> */}
                   </>
                 )}
               </div>
@@ -657,7 +657,7 @@ const LandingPage = () => {
                 <div className="contact-icon">📱</div>
                 <div className="contact-details">
                   <h3>Phone</h3>
-                  <p>+91 98765 43210</p>
+                  <p>+91 9136746515</p>
                 </div>
               </div>
               <div className="contact-item">

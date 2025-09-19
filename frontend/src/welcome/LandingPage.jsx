@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LandingPage.css";
+import GeminiChatbot from "../features/GeminiChatBot";
 
 const LandingPage = () => {
   const [email, setEmail] = useState("");
@@ -790,6 +791,11 @@ const LandingPage = () => {
       <div className={`scroll-top ${isVisible ? 'visible' : ''}`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
         ↑
       </div>
+
+      <GeminiChatbot 
+        apiKey="AIzaSyA9yHn2kESOejQd_1Ez1DNNJFbcLUdolO8" 
+        darkMode={darkMode}
+      />
     </div>
   );
 };

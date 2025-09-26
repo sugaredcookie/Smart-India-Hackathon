@@ -13,7 +13,6 @@ const GeminiChatbot = ({ apiKey, darkMode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
-  // Scroll to bottom of chat when new messages are added
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -27,14 +26,12 @@ const GeminiChatbot = ({ apiKey, darkMode }) => {
     
     if (!inputText.trim() || isLoading) return;
     
-    // Add user message to chat
     const userMessage = { text: inputText, sender: "user" };
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsLoading(true);
     
     try {
-      // Correct Gemini API endpoint
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
           method: 'POST',
@@ -60,8 +57,7 @@ const GeminiChatbot = ({ apiKey, darkMode }) => {
       }
       
       const data = await response.json();
-      
-      // Handle different response structures
+    
       let botText;
       if (data.candidates && data.candidates[0] && data.candidates[0].content) {
         botText = data.candidates[0].content.parts[0].text;
@@ -71,8 +67,7 @@ const GeminiChatbot = ({ apiKey, darkMode }) => {
         console.error('Unexpected API response structure:', data);
         throw new Error('Unexpected response format from Gemini API');
       }
-      
-      // Add bot response to chat
+    
       setMessages(prev => [...prev, { text: botText, sender: "bot" }]);
     } catch (error) {
       console.error('Error calling Gemini API:', error);
@@ -94,7 +89,6 @@ const GeminiChatbot = ({ apiKey, darkMode }) => {
 
   return (
     <div className={`gemini-chatbot ${darkMode ? 'dark-mode' : 'light-mode'}`}>
-      {/* Chatbot toggle button */}
       {!isOpen && (
         <button 
           className="chatbot-toggle"
@@ -105,8 +99,7 @@ const GeminiChatbot = ({ apiKey, darkMode }) => {
           <span className="pulse-animation"></span>
         </button>
       )}
-      
-      {/* Chat container */}
+
       {isOpen && (
         <div className="chat-container">
           <div className="chat-header">

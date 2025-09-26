@@ -33,7 +33,6 @@ const Quote = () => {
   });
   const [currentUser, setCurrentUser] = useState(null);
 
-  // New quote request form state
   const [newQuoteRequest, setNewQuoteRequest] = useState({
     pickupLocation: "",
     deliveryLocation: "",
@@ -58,7 +57,6 @@ const Quote = () => {
     notes: ""
   });
 
-  // New quote response form state
   const [newQuoteResponse, setNewQuoteResponse] = useState({
     quoteAmount: "",
     currency: "INR",
@@ -68,7 +66,6 @@ const Quote = () => {
     notes: ""
   });
 
-// Get current user info - FIXED VERSION
 useEffect(() => {
   const getCurrentUser = async () => {
     try {
@@ -80,25 +77,17 @@ useEffect(() => {
         return;
       }
 
-      // Configure axios with the token FIRST before any API calls
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-      // Clear any potentially corrupted user data first
       localStorage.removeItem("user");
 
-      // Fetch fresh user data from API
       try {
         console.log("Fetching user data from /api/auth/me");
         const backendUrl = process.env.NODE_ENV === 'production' ? '' : 'https://smart-india-hackathon-816r.onrender.com';
         const response = await axios.get(`${backendUrl}/api/auth/me`);
         // console.log("Full API response:", response);
-        
-        // Handle different possible response structures more carefully
         let userData = null;
         
-        // Check if response.data exists and is an object
         if (response.data && typeof response.data === 'object') {
-          // Check nested structures
           if (response.data.data && response.data.data.user) {
             userData = response.data.data.user;
             console.log("Using response.data.data.user structure");
@@ -109,7 +98,6 @@ useEffect(() => {
             userData = response.data.user;
             console.log("Using response.data.user structure");
           } else {
-            // If none of the above, use the entire data object
             userData = response.data;
             // console.log("Using response.data structure");
           }
@@ -119,14 +107,12 @@ useEffect(() => {
         }
         
         // console.log("Extracted userData:", userData);
-        
-        // Validate the extracted user data
+
         if (!userData || typeof userData !== 'object' || !userData._id) {
           console.error("Invalid user data structure:", userData);
           throw new Error("Invalid user data received from server");
         }
-        
-        // Ensure role field exists and is correct
+      
         if (!userData.role) {
           // console.warn("No role field found in user data, checking alternatives");
           if (userData.userType) {
@@ -134,7 +120,6 @@ useEffect(() => {
           } else if (userData.type) {
             userData.role = userData.type;
           } else {
-            // Try to infer role from other fields
             if (userData.licenseNumber) {
               userData.role = "transporter";
             } else if (userData.networkId) {
@@ -142,7 +127,6 @@ useEffect(() => {
             } else if (userData.businessType) {
               userData.role = "company";
             } else {
-              // Default to company if we can't determine
               userData.role = "company";
             }
             // console.log("Inferred role as:", userData.role);
@@ -156,8 +140,6 @@ useEffect(() => {
         
       } catch (fetchError) {
         // console.error("Failed to fetch user data:", fetchError);
-        
-        // More detailed error handling
         if (fetchError.response) {
           console.error("Response status:", fetchError.response.status);
           console.error("Response data:", fetchError.response.data);
@@ -175,8 +157,7 @@ useEffect(() => {
         } else {
           setError("Failed to load user data. Please try again.");
         }
-        
-        // Clear invalid data
+      
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         navigate("/login");
@@ -193,8 +174,6 @@ useEffect(() => {
 
   getCurrentUser();
 }, [navigate]);
-
-  // Load data based on active tab
   useEffect(() => {
     if (!currentUser) return;
 
@@ -206,8 +185,6 @@ useEffect(() => {
       loadMyQuoteResponses();
     }
   }, [activeTab, currentUser, filters]);
-
-  // Load all quote requests (for freight forwarders/transporters to browse)
   const loadQuoteRequests = async () => {
     try {
       setLoading(prev => ({ ...prev, quoteRequests: true }));
@@ -228,7 +205,6 @@ useEffect(() => {
     }
   };
 
-  // Load quote requests created by the current company
   const loadMyQuoteRequests = async () => {
     try {
       setLoading(prev => ({ ...prev, myQuoteRequests: true }));
@@ -243,7 +219,6 @@ useEffect(() => {
     }
   };
 
-  // Load quote responses created by the current freight forwarder/transporter
   const loadMyQuoteResponses = async () => {
     try {
       setLoading(prev => ({ ...prev, myQuoteResponses: true }));
@@ -257,8 +232,6 @@ useEffect(() => {
       setLoading(prev => ({ ...prev, myQuoteResponses: false }));
     }
   };
-
-  // Load responses for a specific quote request
   const loadQuoteResponses = async (requestId) => {
     try {
       setLoading(prev => ({ ...prev, quoteResponses: true }));
@@ -274,8 +247,6 @@ useEffect(() => {
       setLoading(prev => ({ ...prev, quoteResponses: false }));
     }
   };
-
-  // Create a new quote request
   const createQuoteRequest = async () => {
     try {
       const requestData = {
@@ -296,7 +267,6 @@ useEffect(() => {
       setSuccess("Quote request created successfully!");
       setTimeout(() => setSuccess(null), 3000);
       
-      // Reset form
       setNewQuoteRequest({
         pickupLocation: "",
         deliveryLocation: "",
@@ -321,7 +291,6 @@ useEffect(() => {
         notes: ""
       });
 
-      // Reload my quote requests if on that tab
       if (activeTab === "myRequests") {
         loadMyQuoteRequests();
       }
@@ -331,7 +300,6 @@ useEffect(() => {
     }
   };
 
-  // Create a new quote response
   const createQuoteResponse = async () => {
     try {
       const responseData = {
@@ -346,7 +314,6 @@ useEffect(() => {
       setSuccess("Quote response submitted successfully!");
       setTimeout(() => setSuccess(null), 3000);
       
-      // Reset form
       setNewQuoteResponse({
         quoteAmount: "",
         currency: "INR",
@@ -357,8 +324,6 @@ useEffect(() => {
       });
 
       setSelectedRequest(null);
-      
-      // Reload quote requests if on browse tab
       if (activeTab === "browse") {
         loadQuoteRequests();
       }
@@ -367,20 +332,14 @@ useEffect(() => {
       setError("Failed to submit quote response. Please try again.");
     }
   };
-
-  // Accept a quote response
   const acceptQuoteResponse = async (responseId) => {
     try {
       await axios.post(`${backendURL}/api/quote-responses/${responseId}/accept`);
       
       setSuccess("Quote response accepted successfully!");
       setTimeout(() => setSuccess(null), 3000);
-      
-      // Reload responses
       const updatedResponses = await loadQuoteResponses(selectedRequest._id);
       setSelectedRequest({...selectedRequest, responses: updatedResponses});
-      
-      // Reload my quote requests to see updated status
       if (activeTab === "myRequests") {
         loadMyQuoteRequests();
       }
@@ -389,14 +348,10 @@ useEffect(() => {
       setError("Failed to accept quote response. Please try again.");
     }
   };
-
-  // Update filter values
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
   };
-
-  // Update new quote request form values
   const handleRequestInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     
@@ -425,8 +380,6 @@ useEffect(() => {
       }));
     }
   };
-
-  // Update new quote response form values
   const handleResponseInputChange = (e) => {
     const { name, value } = e.target;
     setNewQuoteResponse(prev => ({
@@ -435,13 +388,10 @@ useEffect(() => {
     }));
   };
 
-  // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
   };
-
-  // Format currency
   const formatCurrency = (amount, currency) => {
     if (!amount) return "N/A";
     return new Intl.NumberFormat('en-IN', {
@@ -449,8 +399,6 @@ useEffect(() => {
       currency: currency || 'INR'
     }).format(amount);
   };
-
-  // Filter quote requests based on search query
   const filteredQuoteRequests = quoteRequests.filter(request => {
     if (!filters.searchQuery) return true;
     
@@ -550,13 +498,10 @@ useEffect(() => {
       
       {/* {console.log('Current user:', currentUser)} */}
 
-      {/* Browse Requests Tab (for freight forwarders/transporters) */}
       {activeTab === "browse" && (currentUser.role === "freight-forwarder" || currentUser.role === "transporter") && (
         <div className="tab-content">
           <div className="filters-section">
             <h3>Filter Requests</h3>
-            
-            {/* Search Bar */}
             <div className="search-bar">
               <input
                 type="text"

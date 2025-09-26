@@ -19,7 +19,6 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is logged in
     const checkAuthStatus = () => {
       const token = localStorage.getItem('token');
       const user = localStorage.getItem('user');
@@ -41,15 +40,12 @@ const LandingPage = () => {
 
     checkAuthStatus();
 
-    // Initialize dark mode
     document.body.classList.add('dark-mode');
 
-    // Add scroll event listener to handle section animations
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       setIsVisible(scrollTop > 100);
       
-      // Section animation logic
       const sections = document.querySelectorAll('.section');
       sections.forEach(section => {
         const sectionTop = section.offsetTop;
@@ -60,9 +56,8 @@ const LandingPage = () => {
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial check
+    handleScroll();
 
-    // Initialize particles
     initParticles();
 
     return () => {
@@ -87,7 +82,6 @@ const LandingPage = () => {
     const particles = [];
     const particleCount = 100;
     
-    // Set canvas size
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -96,7 +90,6 @@ const LandingPage = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    // Particle class
     class Particle {
       constructor() {
         this.x = Math.random() * canvas.width;
@@ -126,13 +119,11 @@ const LandingPage = () => {
         ctx.fill();
       }
     }
-    
-    // Create particles
+  
     for (let i = 0; i < particleCount; i++) {
       particles.push(new Particle());
     }
     
-    // Animation loop
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
@@ -140,7 +131,6 @@ const LandingPage = () => {
         particles[i].update();
         particles[i].draw();
         
-        // Connect particles with lines
         for (let j = i; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
@@ -341,7 +331,6 @@ const LandingPage = () => {
 
   return (
     <div className={`landing-container ${darkMode ? 'dark-mode' : 'light-mode'}`}>
-      {/* Particles Background Canvas */}
       <canvas 
         ref={canvasRef} 
         className="particles-background"
@@ -355,16 +344,12 @@ const LandingPage = () => {
           pointerEvents: 'none'
         }}
       />
-      
-      {/* Alert Messages */}
       {contactAlert.show && (
         <div className={`alert ${contactAlert.type}`}>
           {contactAlert.message}
           <button onClick={() => setContactAlert({ show: false, message: "", type: "" })}>×</button>
         </div>
       )}
-      
-      {/* Navigation */}
       <nav className={`navbar ${isVisible ? 'scrolled' : ''}`}>
         <div className="nav-container">
           <div className="logo">
@@ -399,8 +384,6 @@ const LandingPage = () => {
           </div>
         </div>
       </nav>
-
-      {/* Hero Section */}
       <section className="hero">
         <div className="hero-container">
           <div className="hero-content">
@@ -419,7 +402,6 @@ const LandingPage = () => {
                 ) : (
                   <>
                     <button onClick={redirectToSignup} className="cta-btn primary">Get Started</button>
-                    {/* <button className="cta-btn secondary">Watch Video</button> */}
                   </>
                 )}
               </div>
@@ -464,16 +446,12 @@ const LandingPage = () => {
           </div>
         </div>
         
-        {/* Animated background elements */}
         <div className="hero-background-elements">
           <div className="bg-element-1"></div>
           <div className="bg-element-2"></div>
           <div className="bg-element-3"></div>
         </div>
       </section>
-
-      {/* Rest of your sections remain the same */}
-      {/* Vision Section */}
       <section className="section vision" id="vision">
         <div className="section-container">
           <h2 className="section-title">Our Vision</h2>
@@ -502,7 +480,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Problem Section */}
       <section className="section problem" id="problem">
         <div className="section-container">
           <h2 className="section-title">The Challenges We Solve</h2>
@@ -530,8 +507,6 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-
-      {/* Solution Section */}
       <section className="section solution" id="solution">
         <div className="section-container">
           <h2 className="section-title">The Nilara Solution</h2>
@@ -585,7 +560,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <section className="section features" id="features">
         <div className="section-container">
           <h2 className="section-title">How Nilara Works</h2>
@@ -617,7 +591,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="cta-section">
         <div className="cta-container">
           <h2>Ready to Transform Your Logistics?</h2>
@@ -638,7 +611,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Contact Section */}
       <section className="section contact" id="contact">
         <div className="section-container">
           <h2 className="section-title">Get In Touch</h2>
@@ -709,7 +681,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Newsletter Section */}
       <section className="newsletter">
         <div className="newsletter-container">
           <h2>Beta Tester Signup</h2>
@@ -737,7 +708,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <footer className="footer">
         <div className="footer-container">
           <div className="footer-content">
@@ -787,7 +757,6 @@ const LandingPage = () => {
         </div>
       </footer>
 
-      {/* Scroll to top button */}
       <div className={`scroll-top ${isVisible ? 'visible' : ''}`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
         ↑
       </div>

@@ -36,8 +36,6 @@ const CommunityHub = () => {
   });
   const [currentUser, setCurrentUser] = useState(null);
   const [sidebarVisible, setSidebarVisible] = useState(true);
-
-  // Get API URL safely
   const getApiUrl = () => {
     if (window._env_ && window._env_.REACT_APP_API_URL) {
       return window._env_.REACT_APP_API_URL;
@@ -45,7 +43,6 @@ const CommunityHub = () => {
     return "https://smart-india-hackathon-816r.onrender.com";
   };
 
-  // Scroll to bottom of messages
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -53,8 +50,6 @@ const CommunityHub = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  // Get current user info
   useEffect(() => {
     const getCurrentUser = () => {
       try {
@@ -63,8 +58,6 @@ const CommunityHub = () => {
           navigate("/login");
           return null;
         }
-
-        // Try to get user info from token or localStorage
         try {
           const tokenParts = token.split('.');
           if (tokenParts.length === 3) {
@@ -81,14 +74,10 @@ const CommunityHub = () => {
         } catch (decodeError) {
           console.log("Could not decode token");
         }
-
-        // Check localStorage for existing user
         const savedUser = localStorage.getItem("user");
         if (savedUser && savedUser !== "undefined") {
           return JSON.parse(savedUser);
         }
-
-        // Final fallback
         const demoUser = {
           _id: `user-${Date.now()}`,
           companyName: "Demo User",
@@ -108,8 +97,6 @@ const CommunityHub = () => {
     const user = getCurrentUser();
     if (user) {
       setCurrentUser(user);
-      
-      // Configure axios
       const token = localStorage.getItem("token");
       if (token) {
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -117,8 +104,6 @@ const CommunityHub = () => {
       }
     }
   }, [navigate]);
-
-  // Check if user is member of community
   const isUserMember = (community) => {
     if (!currentUser || !community.members) return false;
     return community.members.some(member => {
@@ -126,15 +111,11 @@ const CommunityHub = () => {
       return memberUserId === currentUser._id;
     });
   };
-
-  // Check if user is the creator of the community
   const isUserCreator = (community) => {
     if (!currentUser || !community.createdBy) return false;
     const creatorId = community.createdBy._id || community.createdBy;
     return creatorId === currentUser._id;
   };
-
-  // Check if user has a pending request
   const hasPendingRequest = (community) => {
     if (!currentUser || !community.joinRequests) return false;
     return community.joinRequests.some(request => {
@@ -142,15 +123,11 @@ const CommunityHub = () => {
       return requestUserId === currentUser._id && request.status === "pending";
     });
   };
-
-  // Load communities
   const fetchCommunities = async () => {
     try {
       setLoading(prev => ({ ...prev, communities: true }));
       const response = await axios.get("/api/community");
       setCommunities(response.data.data.communities);
-      
-      // Auto-select first community if user is member or creator
       const userCommunities = response.data.data.communities.filter(community => 
         isUserMember(community) || isUserCreator(community)
       );
@@ -170,8 +147,6 @@ const CommunityHub = () => {
       fetchCommunities();
     }
   }, [currentUser]);
-
-  // Load messages for selected community
   useEffect(() => {
     if (!selectedCommunity) return;
     
@@ -189,18 +164,13 @@ const CommunityHub = () => {
     };
 
     fetchMessages();
-    
-    // Refresh messages every 5 seconds
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
   }, [selectedCommunity]);
-
-  // Handle sending messages
   const handleSendMessage = async () => {
     if (!message.trim() || !selectedCommunity || !currentUser) return;
     
     try {
-      // Create optimistic UI update
       const tempMessage = {
         _id: Date.now().toString(),
         sender: { _id: currentUser._id, companyName: currentUser.companyName || "You" },
@@ -216,8 +186,6 @@ const CommunityHub = () => {
       await axios.post(`/api/community/${selectedCommunity._id}/messages`, {
         content: message
       });
-      
-      // Remove temp message (real one will come via refresh)
       setTimeout(() => {
         setMessages(prev => prev.filter(msg => !msg.isTemp));
       }, 1000);
@@ -225,7 +193,6 @@ const CommunityHub = () => {
     } catch (error) {
       console.error("Failed to send message:", error);
       setError("Failed to send message. Please try again.");
-      // Remove the temporary message on error
       setMessages(prev => prev.filter(msg => !msg.isTemp));
     } finally {
       setLoading(prev => ({ ...prev, sending: false }));
@@ -238,8 +205,6 @@ const CommunityHub = () => {
       handleSendMessage();
     }
   };
-
-  // Open join request modal
   const openJoinModal = (community, e) => {
     if (e) e.stopPropagation();
     setPendingCommunity(community);
@@ -250,8 +215,6 @@ const CommunityHub = () => {
     });
     setShowJoinModal(true);
   };
-
-  // Submit join request
   const submitJoinRequest = async () => {
     if (!pendingCommunity) return;
     
@@ -261,14 +224,12 @@ const CommunityHub = () => {
       setShowJoinModal(false);
       setSuccess("Join request sent! The community admin will review your request.");
       setTimeout(() => setSuccess(null), 5000);
-      fetchCommunities(); // Refresh communities list
+      fetchCommunities();
     } catch (error) {
       console.error("Failed to send join request:", error);
       setError("Failed to send join request. Please try again.");
     }
   };
-
-  // Load join requests for admin view
   const loadJoinRequests = async (communityId) => {
     try {
       setLoading(prev => ({ ...prev, requests: true }));
@@ -281,8 +242,6 @@ const CommunityHub = () => {
       setLoading(prev => ({ ...prev, requests: false }));
     }
   };
-
-  // Process join request (approve/reject)
   const processJoinRequest = async (communityId, requestId, action) => {
     try {
       await axios.post(
@@ -293,7 +252,6 @@ const CommunityHub = () => {
       setSuccess(`Join request ${action === "approve" ? "approved" : "rejected"} successfully`);
       setTimeout(() => setSuccess(null), 3000);
       
-      // Refresh data
       loadJoinRequests(communityId);
       fetchCommunities();
     } catch (error) {
@@ -301,8 +259,6 @@ const CommunityHub = () => {
       setError("Failed to process join request.");
     }
   };
-
-  // Toggle admin view
   const toggleAdminView = () => {
     if (selectedCommunity && isUserCreator(selectedCommunity)) {
       setAdminView(!adminView);
@@ -311,8 +267,6 @@ const CommunityHub = () => {
       }
     }
   };
-
-  // Create new community
   const createCommunity = async () => {
     try {
       await axios.post("/api/community", newCommunity);
@@ -320,27 +274,21 @@ const CommunityHub = () => {
       setNewCommunity({ name: "", description: "", isPublic: true });
       setSuccess("Community created successfully!");
       setTimeout(() => setSuccess(null), 3000);
-      fetchCommunities(); // Refresh communities list
+      fetchCommunities();
     } catch (error) {
       console.error("Failed to create community:", error);
       setError("Failed to create community. Please try again.");
     }
   };
-
-  // Format message time
   const formatTime = (dateString) => {
     return new Date(dateString).toLocaleTimeString([], { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
   };
-
-  // Toggle sidebar visibility on mobile
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
   };
-
-  // If no current user, show loading
   if (!currentUser) {
     return (
       <div className="community-hub">

@@ -145,7 +145,6 @@ const Login = () => {
         type: "info"
       });
 
-      // Send login data to your backend
       const response = await fetch('https://smart-india-hackathon-816r.onrender.com/api/auth/login', {
         method: 'POST',
         headers: {
@@ -166,20 +165,17 @@ const Login = () => {
           type: "success"
         });
         
-        // Store token and user data (adjust based on your API response)
         if (result.token) {
           localStorage.setItem('token', result.token);
           localStorage.setItem('user', JSON.stringify(result.user));
         }
 
-        // Reset form
         setFormData({
           email: "",
           password: "",
           rememberMe: false
         });
 
-        // Redirect to dashboard after a delay
         setTimeout(() => {
           window.location.href = '/dashboard';
         }, 1500);
@@ -205,7 +201,6 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      {/* Particles Background Canvas */}
       <canvas 
         ref={canvasRef} 
         className="particles-background"
@@ -219,8 +214,6 @@ const Login = () => {
           pointerEvents: 'none'
         }}
       />
-      
-      {/* Alert Messages */}
       {alert.show && (
         <div className={`alert ${alert.type}`}>
           {alert.message}

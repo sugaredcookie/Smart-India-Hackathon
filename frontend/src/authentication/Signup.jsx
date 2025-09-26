@@ -17,10 +17,9 @@ const Signup = () => {
       state: "",
       pincode: ""
     },
-    // Role-specific fields
-    licenseNumber: "",   // transporter
-    networkId: "",       // freight forwarder
-    businessType: "",    // company
+    licenseNumber: "",   
+    networkId: "",       
+    businessType: "",    
     acceptTerms: false
   });
 

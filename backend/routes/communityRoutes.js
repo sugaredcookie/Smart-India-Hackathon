@@ -1,16 +1,11 @@
-// In your communityRoutes.js file, add this before your PATCH route:
 const express = require("express");
 const router = express.Router();
 
-// Import controllers
 const communityController = require("../controllers/communityController");
 const messageController = require("../controllers/messageController");
 const { protect } = require("../middlewares/auth");
 
-// Protect all routes
 router.use(protect);
-
-// Handle preflight requests for PATCH
 router.options("/:id/join-requests/:requestId", (req, res) => {
   res.header('Access-Control-Allow-Origin', process.env.FRONTEND_URL || 'http://localhost:5173');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');

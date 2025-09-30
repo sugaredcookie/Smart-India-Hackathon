@@ -1,11 +1,37 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LandingPage.css";
+import logo from '../assets/logo.png'
+import { 
+  FaTwitter, 
+  FaLinkedin, 
+  FaFacebook, 
+  FaInstagram, 
+  FaGithub,
+  FaBox,
+  FaSearch,
+  FaChartLine,
+  FaGlobe,
+  FaBolt,
+  FaHandshake,
+  FaBriefcase,
+  FaUsers,
+  FaChartBar,
+  FaNetworkWired,
+  FaShieldAlt,
+  FaEnvelope,
+  FaPhone,
+  FaMapMarkerAlt,
+  FaArrowUp,
+  FaUserPlus,
+  FaLink,
+  FaUsersCog,
+  FaRocket
+} from 'react-icons/fa';
 
 const LandingPage = () => {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
   const [isVisible, setIsVisible] = useState(false);
   const [contactAlert, setContactAlert] = useState({ show: false, message: "", type: "" });
   const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" });
@@ -39,7 +65,7 @@ const LandingPage = () => {
 
     checkAuthStatus();
 
-    document.body.classList.add('dark-mode');
+    document.body.classList.add('light-mode');
 
     const handleScroll = () => {
       const scrollTop = window.scrollY;
@@ -57,8 +83,6 @@ const LandingPage = () => {
     window.addEventListener('scroll', handleScroll);
     handleScroll();
 
-    initParticles();
-
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
@@ -71,89 +95,6 @@ const LandingPage = () => {
     setUserName('');
     navigate('/');
     window.location.reload();
-  };
-
-  const initParticles = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    const particles = [];
-    const particleCount = 100;
-    
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    
-    class Particle {
-      constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 3 + 1;
-        this.speedX = Math.random() * 1 - 0.5;
-        this.speedY = Math.random() * 1 - 0.5;
-        this.color = darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)';
-      }
-      
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        
-        if (this.x > canvas.width || this.x < 0) {
-          this.speedX = -this.speedX;
-        }
-        if (this.y > canvas.height || this.y < 0) {
-          this.speedY = -this.speedY;
-        }
-      }
-      
-      draw() {
-        ctx.fillStyle = this.color;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-  
-    for (let i = 0; i < particleCount; i++) {
-      particles.push(new Particle());
-    }
-    
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw();
-        
-        for (let j = i; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if (distance < 100) {
-            ctx.beginPath();
-            ctx.strokeStyle = darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
-          }
-        }
-      }
-      
-      requestAnimationFrame(animate);
-    };
-    
-    animate();
-    
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-    };
   };
 
   const redirectToSignup = function() {
@@ -322,14 +263,8 @@ const LandingPage = () => {
     }
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.body.classList.toggle('dark-mode');
-    document.body.classList.toggle('light-mode');
-  };
-
   return (
-    <div className={`landing-container ${darkMode ? 'dark-mode' : 'light-mode'}`}>
+    <div className="landing-container light-mode">
       <canvas 
         ref={canvasRef} 
         className="particles-background"
@@ -352,7 +287,11 @@ const LandingPage = () => {
       <nav className={`navbar ${isVisible ? 'scrolled' : ''}`}>
         <div className="nav-container">
           <div className="logo">
-            <span className="logo-icon">🚚</span>
+            <img 
+              src={logo}
+              alt="Nilara Logo" 
+              className="logo-image"
+            />
             <span className="logo-text">NILARA</span>
           </div>
           <div className="nav-links">
@@ -363,15 +302,11 @@ const LandingPage = () => {
             <a href="#contact">Contact</a>
           </div>
           <div className="nav-buttons">
-            <button className="theme-toggle" onClick={toggleDarkMode}>
-              {darkMode ? '☀️' : '🌙'}
-            </button>
-            
             {isLoggedIn ? (
               <div className="user-menu">
                 <span className="welcome-text">Welcome, {userName}</span>
                 <button onClick={redirectToDashboard} className="dashboard-btn">Dashboard</button>
-                <button onClick={redirectToCommunityHub} className="community-btn">Community</button>
+                {/* <button onClick={redirectToCommunityHub} className="community-btn">Community</button> */}
                 <button onClick={handleLogout} className="logout-btn">Logout</button>
               </div>
             ) : (
@@ -421,15 +356,15 @@ const LandingPage = () => {
             </div>
             <div className="hero-visual">
               <div className="floating-card card-1">
-                <span>📦</span>
+                <FaBox className="floating-card-icon" />
                 <p>Seamless Freight Management</p>
               </div>
               <div className="floating-card card-2">
-                <span>🔍</span>
+                <FaSearch className="floating-card-icon" />
                 <p>Transparent Bidding</p>
               </div>
               <div className="floating-card card-3">
-                <span>📊</span>
+                <FaChartLine className="floating-card-icon" />
                 <p>Real-time Analytics</p>
               </div>
               <div className="main-visual">
@@ -461,17 +396,23 @@ const LandingPage = () => {
           </p>
           <div className="vision-cards">
             <div className="vision-card">
-              <div className="vision-icon">🌐</div>
+              <div className="vision-icon">
+                <FaGlobe />
+              </div>
               <h3>Democratize Access</h3>
               <p>Making logistics technology accessible to businesses of all sizes</p>
             </div>
             <div className="vision-card">
-              <div className="vision-icon">⚡</div>
+              <div className="vision-icon">
+                <FaBolt />
+              </div>
               <h3>Increase Efficiency</h3>
               <p>Reducing delays and operational costs across the supply chain</p>
             </div>
             <div className="vision-card">
-              <div className="vision-icon">🤝</div>
+              <div className="vision-icon">
+                <FaHandshake />
+              </div>
               <h3>Create Connections</h3>
               <p>Building a network that connects all players in the logistics ecosystem</p>
             </div>
@@ -515,42 +456,54 @@ const LandingPage = () => {
           <div className="solution-cards">
             <div className="solution-card">
               <div className="solution-image">
-                <div className="solution-icon">💼</div>
+                <div className="solution-icon">
+                  <FaBriefcase />
+                </div>
               </div>
               <h3>Online Networking Platform</h3>
               <p>Connect freight forwarders, transporters, and manufacturers in a collaborative ecosystem</p>
             </div>
             <div className="solution-card">
               <div className="solution-image">
-                <div className="solution-icon">🤝</div>
+                <div className="solution-icon">
+                  <FaUsers />
+                </div>
               </div>
               <h3>Coworking Space</h3>
               <p>A collaborative environment to foster partnerships and knowledge sharing</p>
             </div>
             <div className="solution-card">
               <div className="solution-image">
-                <div className="solution-icon">📈</div>
+                <div className="solution-icon">
+                  <FaChartBar />
+                </div>
               </div>
               <h3>Bidding Platform</h3>
               <p>Enables direct interaction between freight forwarders and transporters</p>
             </div>
             <div className="solution-card">
               <div className="solution-image">
-                <div className="solution-icon">📊</div>
+                <div className="solution-icon">
+                  <FaChartLine />
+                </div>
               </div>
               <h3>FMS & TMS Solutions</h3>
               <p>Tiered packages ensuring MSMEs can integrate seamlessly without long transitions</p>
             </div>
             <div className="solution-card">
               <div className="solution-image">
-                <div className="solution-icon">🌐</div>
+                <div className="solution-icon">
+                  <FaNetworkWired />
+                </div>
               </div>
               <h3>IoT Integration</h3>
               <p>Smart solutions for freight warehousing and transport management</p>
             </div>
             <div className="solution-card">
               <div className="solution-image">
-                <div className="solution-icon">🔒</div>
+                <div className="solution-icon">
+                  <FaShieldAlt />
+                </div>
               </div>
               <h3>Secure Ecosystem</h3>
               <p>Built with trust and transparency at the core of all transactions</p>
@@ -619,21 +572,27 @@ const LandingPage = () => {
           <div className="contact-content">
             <div className="contact-info">
               <div className="contact-item">
-                <div className="contact-icon">📧</div>
+                <div className="contact-icon">
+                  <FaEnvelope />
+                </div>
                 <div className="contact-details">
                   <h3>Email</h3>
                   <p>info@nilara.com</p>
                 </div>
               </div>
               <div className="contact-item">
-                <div className="contact-icon">📱</div>
+                <div className="contact-icon">
+                  <FaPhone />
+                </div>
                 <div className="contact-details">
                   <h3>Phone</h3>
                   <p>+91 9136746515</p>
                 </div>
               </div>
               <div className="contact-item">
-                <div className="contact-icon">📍</div>
+                <div className="contact-icon">
+                  <FaMapMarkerAlt />
+                </div>
                 <div className="contact-details">
                   <h3>Office</h3>
                   <p>Mumbai, India</p>
@@ -712,15 +671,27 @@ const LandingPage = () => {
           <div className="footer-content">
             <div className="footer-section">
               <div className="logo">
-                <span className="logo-icon">🚚</span>
+                <img 
+                  src={logo}
+                  alt="Nilara Logo" 
+                  className="logo-image"
+                />
                 <span className="logo-text">NILARA</span>
               </div>
               <p>Democratizing logistics technology for businesses of all sizes</p>
               <div className="social-links">
-                <a href="#" aria-label="Twitter">🐦</a>
-                <a href="#" aria-label="LinkedIn">👔</a>
-                <a href="#" aria-label="Facebook">📘</a>
-                <a href="#" aria-label="Instagram">📸</a>
+                <a href="#" aria-label="Twitter">
+                  <FaTwitter className="social-icon" />
+                </a>
+                <a href="#" aria-label="LinkedIn">
+                  <FaLinkedin className="social-icon" />
+                </a>
+                <a href="#" aria-label="Facebook">
+                  <FaFacebook className="social-icon" />
+                </a>
+                <a href="https://www.instagram.com/nilara.freight/" aria-label="Instagram">
+                  <FaInstagram className="social-icon" />
+                </a>
               </div>
             </div>
             <div className="footer-section">
@@ -757,7 +728,7 @@ const LandingPage = () => {
       </footer>
 
       <div className={`scroll-top ${isVisible ? 'visible' : ''}`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-        ↑
+        <FaArrowUp />
       </div>
     </div>
   );

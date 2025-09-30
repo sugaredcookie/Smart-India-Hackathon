@@ -33,38 +33,60 @@ exports.loginAdmin = catchAsync(async (req, res, next) => {
 
 // Signup - Create a new user
 exports.signup = catchAsync(async (req, res, next) => {
-  const { role, licenseNumber, networkId, businessType } = req.body;
+  const { 
+    firstName, 
+    lastName, 
+    email, 
+    password, 
+    confirmPassword, 
+    role, 
+    phone, 
+    companyName, 
+    address, 
+    termsAccepted 
+  } = req.body;
 
-  if (!role) return next(new AppError("Role is required", 400));
-
-  // Conditional checks
-  if (role === "transporter" && !licenseNumber) {
-    return next(new AppError("License Number is required for Transporters", 400));
-  }
-  if (role === "freight-forwarder" && !networkId) {
-    return next(new AppError("Network ID is required for Freight Forwarders", 400));
-  }
-  if (role === "company" && !businessType) {
-    return next(new AppError("Business Type is required for Companies", 400));
+  // Validation
+  if (!firstName || !lastName || !email || !password || !role) {
+    return next(new AppError("Please fill in all required fields", 400));
   }
 
+  if (password !== confirmPassword) {
+    return next(new AppError("Passwords do not match", 400));
+  }
+
+  if (!termsAccepted) {
+    return next(new AppError("Please accept the terms and conditions", 400));
+  }
+
+  // Check if User model is working
+  if (typeof User.findOne !== 'function') {
+    return next(new AppError('Database configuration error', 500));
+  }
+
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return next(new AppError("User already exists with this email", 400));
+  }
+
+  // Create new user
   const newUser = await User.create({
+    firstName,
+    lastName,
+    email,
+    password,
     role,
-    companyName: req.body.companyName,
-    gstNumber: req.body.gstNumber,
-    email: req.body.email,
-    password: req.body.password,
-    contactPerson: req.body.contactPerson,
-    phoneNumber: req.body.phoneNumber,
+    phone: phone || '',
+    companyName: companyName || '',
     address: {
-      street: req.body.address.street,
-      city: req.body.address.city,
-      state: req.body.address.state,
-      pincode: req.body.address.pincode
+      street: address?.street || '',
+      city: address?.city || '',
+      state: address?.state || '',
+      zipCode: address?.zipCode || '',
+      country: address?.country || 'India'
     },
-    licenseNumber,
-    networkId,
-    businessType
+    termsAccepted
   });
 
   const token = signToken(newUser._id);
@@ -73,8 +95,17 @@ exports.signup = catchAsync(async (req, res, next) => {
     status: 'success',
     token,
     data: {
-      user: newUser,
+      user: {
+        _id: newUser._id,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+        role: newUser.role,
+        companyName: newUser.companyName,
+        phone: newUser.phone
+      },
     },
+    message: "Account created successfully"
   });
 });
 

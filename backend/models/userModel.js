@@ -2,31 +2,31 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
 const userSchema = new mongoose.Schema({
+  // Personal Information
+  firstName: {
+    type: String,
+    required: [true, "First name is required"],
+    trim: true,
+    maxLength: [50, "First name cannot exceed 50 characters"]
+  },
+  
+  lastName: {
+    type: String,
+    required: [true, "Last name is required"],
+    trim: true,
+    maxLength: [50, "Last name cannot exceed 50 characters"]
+  },
+
   role: {
     type: String,
-    enum: ["company", "transporter", "freight-forwarder", "admin"],
+    enum: ["shipper", "carrier", "driver", "admin"],
     required: [true, "Role is required"]
   },
 
   companyName: { 
     type: String, 
-    required: [true, "Company name is required"],
     trim: true,
     maxLength: [100, "Company name cannot exceed 100 characters"]
-  },
-  
-  gstNumber: { 
-    type: String, 
-    required: [true, "GST number is required"], 
-    unique: true,
-    uppercase: true,
-    trim: true,
-    validate: {
-      validator: function(v) {
-        return /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(v);
-      },
-      message: "Please enter a valid GST number"
-    }
   },
   
   email: {
@@ -43,59 +43,97 @@ const userSchema = new mongoose.Schema({
     }
   },
 
-  password: { 
-    type: String, 
-    required: [true, "Password is required"],
-    minLength: [8, "Password must be at least 8 characters"],
-    select: false
-  },
-  
-  contactPerson: {
+  phone: {
     type: String,
-    required: [true, "Contact person name is required"],
-    trim: true
-  },
-
-  phoneNumber: {
-    type: String,
-    required: [true, "Phone number is required"],
+    trim: true,
     validate: {
       validator: function(v) {
+        if (!v) return true; // Optional field
         return /^[0-9]{10}$/.test(v);
       },
       message: "Please enter a valid 10-digit phone number"
     }
   },
 
+  password: { 
+    type: String, 
+    required: [true, "Password is required"],
+    minLength: [8, "Password must be at least 8 characters"],
+    select: false
+  },
+
   address: {
-    street: { type: String, required: true },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    pincode: { 
+    street: { 
       type: String, 
-      required: true,
+      trim: true 
+    },
+    city: { 
+      type: String, 
+      trim: true 
+    },
+    state: { 
+      type: String, 
+      trim: true 
+    },
+    zipCode: { 
+      type: String,
+      trim: true,
       validate: {
         validator: function(v) {
-          return /^[1-9][0-9]{5}$/.test(v);
+          if (!v) return true; // Optional field
+          return /^[0-9]{5,6}$/.test(v);
         },
-        message: "Please enter a valid 6-digit pincode"
+        message: "Please enter a valid ZIP code"
       }
+    },
+    country: { 
+      type: String, 
+      trim: true,
+      default: "India"
     }
   },
 
-  // Role-specific fields
-  licenseNumber: { type: String },   // only for transporter
-  networkId: { type: String },       // only for freight-forwarder
-  businessType: { type: String },    // only for company
+  // Optional fields
+  gstNumber: { 
+    type: String,
+    uppercase: true,
+    trim: true,
+    sparse: true, // Allows multiple null values
+    validate: {
+      validator: function(v) {
+        if (!v) return true; // Optional field
+        return /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(v);
+      },
+      message: "Please enter a valid GST number"
+    }
+  },
+
+  licenseNumber: { 
+    type: String,
+    trim: true 
+  },   // for carrier/driver
 
   isVerified: {
     type: Boolean,
     default: false
   },
+  
+  termsAccepted: {
+    type: Boolean,
+    required: [true, "Terms and conditions must be accepted"],
+    validate: {
+      validator: function(v) {
+        return v === true;
+      },
+      message: "Terms and conditions must be accepted"
+    }
+  },
+  
   createdAt: { 
     type: Date, 
     default: Date.now 
   },
+  
   lastLogin: {
     type: Date,
     default: null
@@ -103,11 +141,12 @@ const userSchema = new mongoose.Schema({
 });
 
 // Indexes
-userSchema.index({ gstNumber: 1 });
 userSchema.index({ email: 1 });
+userSchema.index({ role: 1 });
 
 // Hash password before save
 userSchema.pre("save", async function(next) {
+  // Only run this function if password was actually modified
   if (!this.isModified("password")) return next();
   
   try {
@@ -119,20 +158,24 @@ userSchema.pre("save", async function(next) {
   }
 });
 
-// Compare passwords
+// Compare passwords method
+userSchema.methods.correctPassword = async function(candidatePassword, userPassword) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+// Compare passwords (alternative method)
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Hide password when sending JSON
+// Hide password when converting to JSON
 userSchema.methods.toJSON = function() {
   const user = this.toObject();
   delete user.password;
   return user;
 };
 
-userSchema.methods.correctPassword = async function(candidatePassword, userPassword) {
-  return await bcrypt.compare(candidatePassword, userPassword);
-};
+// Create and export the model
+const User = mongoose.model("User", userSchema);
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = User;

@@ -6,7 +6,6 @@ import "./CommunityHub.css";
 const CommunityHub = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
-  const [darkMode, setDarkMode] = useState(true);
   const [selectedCommunity, setSelectedCommunity] = useState(null);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
@@ -36,6 +35,7 @@ const CommunityHub = () => {
   });
   const [currentUser, setCurrentUser] = useState(null);
   const [sidebarVisible, setSidebarVisible] = useState(true);
+
   const getApiUrl = () => {
     if (window._env_ && window._env_.REACT_APP_API_URL) {
       return window._env_.REACT_APP_API_URL;
@@ -50,6 +50,7 @@ const CommunityHub = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
   useEffect(() => {
     const getCurrentUser = () => {
       try {
@@ -104,6 +105,7 @@ const CommunityHub = () => {
       }
     }
   }, [navigate]);
+
   const isUserMember = (community) => {
     if (!currentUser || !community.members) return false;
     return community.members.some(member => {
@@ -111,11 +113,13 @@ const CommunityHub = () => {
       return memberUserId === currentUser._id;
     });
   };
+
   const isUserCreator = (community) => {
     if (!currentUser || !community.createdBy) return false;
     const creatorId = community.createdBy._id || community.createdBy;
     return creatorId === currentUser._id;
   };
+
   const hasPendingRequest = (community) => {
     if (!currentUser || !community.joinRequests) return false;
     return community.joinRequests.some(request => {
@@ -123,6 +127,7 @@ const CommunityHub = () => {
       return requestUserId === currentUser._id && request.status === "pending";
     });
   };
+
   const fetchCommunities = async () => {
     try {
       setLoading(prev => ({ ...prev, communities: true }));
@@ -147,6 +152,7 @@ const CommunityHub = () => {
       fetchCommunities();
     }
   }, [currentUser]);
+
   useEffect(() => {
     if (!selectedCommunity) return;
     
@@ -167,6 +173,7 @@ const CommunityHub = () => {
     const interval = setInterval(fetchMessages, 5000);
     return () => clearInterval(interval);
   }, [selectedCommunity]);
+
   const handleSendMessage = async () => {
     if (!message.trim() || !selectedCommunity || !currentUser) return;
     
@@ -205,6 +212,7 @@ const CommunityHub = () => {
       handleSendMessage();
     }
   };
+
   const openJoinModal = (community, e) => {
     if (e) e.stopPropagation();
     setPendingCommunity(community);
@@ -215,6 +223,7 @@ const CommunityHub = () => {
     });
     setShowJoinModal(true);
   };
+
   const submitJoinRequest = async () => {
     if (!pendingCommunity) return;
     
@@ -230,6 +239,7 @@ const CommunityHub = () => {
       setError("Failed to send join request. Please try again.");
     }
   };
+
   const loadJoinRequests = async (communityId) => {
     try {
       setLoading(prev => ({ ...prev, requests: true }));
@@ -242,6 +252,7 @@ const CommunityHub = () => {
       setLoading(prev => ({ ...prev, requests: false }));
     }
   };
+
   const processJoinRequest = async (communityId, requestId, action) => {
     try {
       await axios.post(
@@ -259,6 +270,7 @@ const CommunityHub = () => {
       setError("Failed to process join request.");
     }
   };
+
   const toggleAdminView = () => {
     if (selectedCommunity && isUserCreator(selectedCommunity)) {
       setAdminView(!adminView);
@@ -267,6 +279,7 @@ const CommunityHub = () => {
       }
     }
   };
+
   const createCommunity = async () => {
     try {
       await axios.post("/api/community", newCommunity);
@@ -280,15 +293,18 @@ const CommunityHub = () => {
       setError("Failed to create community. Please try again.");
     }
   };
+
   const formatTime = (dateString) => {
     return new Date(dateString).toLocaleTimeString([], { 
       hour: '2-digit', 
       minute: '2-digit' 
     });
   };
+
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
   };
+
   if (!currentUser) {
     return (
       <div className="community-hub">
@@ -301,16 +317,16 @@ const CommunityHub = () => {
   }
 
   return (
-    <div className={`community-hub ${darkMode ? "dark" : "light"}`}>
+    <div className="community-hub">
       {error && (
-        <div className="error-banner">
+        <div className="alert error">
           <span>{error}</span>
           <button onClick={() => setError(null)}>×</button>
         </div>
       )}
       
       {success && (
-        <div className="success-banner">
+        <div className="alert success">
           <span>{success}</span>
           <button onClick={() => setSuccess(null)}>×</button>
         </div>
@@ -325,10 +341,10 @@ const CommunityHub = () => {
         {/* Sidebar */}
         <div className={`community-sidebar ${sidebarVisible ? "visible" : ""}`}>
           <div className="sidebar-header">
-            <h2>💬 Nilara Community</h2>
-            <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
-              {darkMode ? "🌙" : "☀️"}
-            </button>
+            <div className="logo">
+              <span className="logo-icon">💬</span>
+              <span className="logo-text">NILARA HUB</span>
+            </div>
           </div>
 
           <div className="communities-list">
@@ -500,7 +516,7 @@ const CommunityHub = () => {
         ) : (
           <div className="chat-placeholder">
             <div className="placeholder-content">
-              <h2>Welcome to Nilara Community!</h2>
+              <h2>Welcome to Nilara Hub!</h2>
               <p>Select a community from the sidebar to start chatting</p>
               {communities.length === 0 && (
                 <p>No communities yet. Create your first one to get started!</p>

@@ -12,7 +12,6 @@ const Login = () => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
-    // Initialize particles
     initParticles();
   }, []);
 
@@ -22,9 +21,8 @@ const Login = () => {
     
     const ctx = canvas.getContext('2d');
     const particles = [];
-    const particleCount = 80;
+    const particleCount = 50;
     
-    // Set canvas size
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -33,7 +31,6 @@ const Login = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    // Particle class
     class Particle {
       constructor() {
         this.x = Math.random() * canvas.width;
@@ -41,7 +38,7 @@ const Login = () => {
         this.size = Math.random() * 2 + 1;
         this.speedX = Math.random() * 1 - 0.5;
         this.speedY = Math.random() * 1 - 0.5;
-        this.color = 'rgba(255, 255, 255, 0.3)';
+        this.color = 'rgba(42, 157, 143, 0.1)';
       }
       
       update() {
@@ -64,12 +61,10 @@ const Login = () => {
       }
     }
     
-    // Create particles
     for (let i = 0; i < particleCount; i++) {
       particles.push(new Particle());
     }
     
-    // Animation loop
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
@@ -77,7 +72,6 @@ const Login = () => {
         particles[i].update();
         particles[i].draw();
         
-        // Connect particles with lines
         for (let j = i; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
@@ -85,7 +79,7 @@ const Login = () => {
           
           if (distance < 100) {
             ctx.beginPath();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.strokeStyle = 'rgba(42, 157, 143, 0.05)';
             ctx.lineWidth = 0.5;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
@@ -204,16 +198,14 @@ const Login = () => {
       <canvas 
         ref={canvasRef} 
         className="particles-background"
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 0,
-          pointerEvents: 'none'
-        }}
       />
+      
+      <div className="background-elements">
+        <div className="bg-element-1"></div>
+        <div className="bg-element-2"></div>
+        <div className="bg-element-3"></div>
+      </div>
+
       {alert.show && (
         <div className={`alert ${alert.type}`}>
           {alert.message}

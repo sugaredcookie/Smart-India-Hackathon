@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import "./Quote.css";
+
 const backendURL = process.env.NODE_ENV === 'production' ? '' : 'https://smart-india-hackathon-816r.onrender.com';
 
 const Quote = () => {
@@ -66,114 +67,95 @@ const Quote = () => {
     notes: ""
   });
 
-useEffect(() => {
-  const getCurrentUser = async () => {
-    try {
-      setLoading(prev => ({ ...prev, user: true }));
-      
-      const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      localStorage.removeItem("user");
-
+  useEffect(() => {
+    const getCurrentUser = async () => {
       try {
-        console.log("Fetching user data from /api/auth/me");
-        const backendUrl = process.env.NODE_ENV === 'production' ? '' : 'https://smart-india-hackathon-816r.onrender.com';
-        const response = await axios.get(`${backendUrl}/api/auth/me`);
-        // console.log("Full API response:", response);
-        let userData = null;
+        setLoading(prev => ({ ...prev, user: true }));
         
-        if (response.data && typeof response.data === 'object') {
-          if (response.data.data && response.data.data.user) {
-            userData = response.data.data.user;
-            console.log("Using response.data.data.user structure");
-          } else if (response.data.data && typeof response.data.data === 'object') {
-            userData = response.data.data;
-            console.log("Using response.data.data structure");
-          } else if (response.data.user) {
-            userData = response.data.user;
-            console.log("Using response.data.user structure");
-          } else {
-            userData = response.data;
-            // console.log("Using response.data structure");
-          }
-        } else {
-          // console.error("Invalid response structure:", response);
-          throw new Error("Invalid API response format");
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login");
+          return;
         }
-        
-        // console.log("Extracted userData:", userData);
 
-        if (!userData || typeof userData !== 'object' || !userData._id) {
-          console.error("Invalid user data structure:", userData);
-          throw new Error("Invalid user data received from server");
-        }
-      
-        if (!userData.role) {
-          // console.warn("No role field found in user data, checking alternatives");
-          if (userData.userType) {
-            userData.role = userData.userType;
-          } else if (userData.type) {
-            userData.role = userData.type;
-          } else {
-            if (userData.licenseNumber) {
-              userData.role = "transporter";
-            } else if (userData.networkId) {
-              userData.role = "freight-forwarder";
-            } else if (userData.businessType) {
-              userData.role = "company";
-            } else {
-              userData.role = "company";
-            }
-            // console.log("Inferred role as:", userData.role);
-          }
-        }
-        
-        // console.log("Final user role:", userData.role);
-        
-        setCurrentUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
-        
-      } catch (fetchError) {
-        // console.error("Failed to fetch user data:", fetchError);
-        if (fetchError.response) {
-          console.error("Response status:", fetchError.response.status);
-          console.error("Response data:", fetchError.response.data);
-          
-          if (fetchError.response.status === 401) {
-            setError("Your session has expired. Please log in again.");
-          } else if (fetchError.response.status === 404) {
-            setError("User not found. Please log in again.");
-          } else {
-            setError(`Server error (${fetchError.response.status}). Please try again.`);
-          }
-        } else if (fetchError.request) {
-          console.error("No response received:", fetchError.request);
-          setError("Network error. Please check your connection and try again.");
-        } else {
-          setError("Failed to load user data. Please try again.");
-        }
-      
-        localStorage.removeItem("token");
+        axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         localStorage.removeItem("user");
-        navigate("/login");
-        return;
-      }
-      
-      setLoading(prev => ({ ...prev, user: false }));
-    } catch (error) {
-      // console.error("Error in getCurrentUser:", error);
-      setLoading(prev => ({ ...prev, user: false }));
-      setError(error.message);
-    }
-  };
 
-  getCurrentUser();
-}, [navigate]);
+        try {
+          const backendUrl = process.env.NODE_ENV === 'production' ? '' : 'https://smart-india-hackathon-816r.onrender.com';
+          const response = await axios.get(`${backendUrl}/api/auth/me`);
+          let userData = null;
+          
+          if (response.data && typeof response.data === 'object') {
+            if (response.data.data && response.data.data.user) {
+              userData = response.data.data.user;
+            } else if (response.data.data && typeof response.data.data === 'object') {
+              userData = response.data.data;
+            } else if (response.data.user) {
+              userData = response.data.user;
+            } else {
+              userData = response.data;
+            }
+          } else {
+            throw new Error("Invalid API response format");
+          }
+          
+          if (!userData || typeof userData !== 'object' || !userData._id) {
+            throw new Error("Invalid user data received from server");
+          }
+        
+          if (!userData.role) {
+            if (userData.userType) {
+              userData.role = userData.userType;
+            } else if (userData.type) {
+              userData.role = userData.type;
+            } else {
+              if (userData.licenseNumber) {
+                userData.role = "transporter";
+              } else if (userData.networkId) {
+                userData.role = "freight-forwarder";
+              } else if (userData.businessType) {
+                userData.role = "company";
+              } else {
+                userData.role = "company";
+              }
+            }
+          }
+          
+          setCurrentUser(userData);
+          localStorage.setItem("user", JSON.stringify(userData));
+          
+        } catch (fetchError) {
+          if (fetchError.response) {
+            if (fetchError.response.status === 401) {
+              setError("Your session has expired. Please log in again.");
+            } else if (fetchError.response.status === 404) {
+              setError("User not found. Please log in again.");
+            } else {
+              setError(`Server error (${fetchError.response.status}). Please try again.`);
+            }
+          } else if (fetchError.request) {
+            setError("Network error. Please check your connection and try again.");
+          } else {
+            setError("Failed to load user data. Please try again.");
+          }
+        
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/login");
+          return;
+        }
+        
+        setLoading(prev => ({ ...prev, user: false }));
+      } catch (error) {
+        setLoading(prev => ({ ...prev, user: false }));
+        setError(error.message);
+      }
+    };
+
+    getCurrentUser();
+  }, [navigate]);
+
   useEffect(() => {
     if (!currentUser) return;
 
@@ -185,6 +167,7 @@ useEffect(() => {
       loadMyQuoteResponses();
     }
   }, [activeTab, currentUser, filters]);
+
   const loadQuoteRequests = async () => {
     try {
       setLoading(prev => ({ ...prev, quoteRequests: true }));
@@ -232,6 +215,7 @@ useEffect(() => {
       setLoading(prev => ({ ...prev, myQuoteResponses: false }));
     }
   };
+
   const loadQuoteResponses = async (requestId) => {
     try {
       setLoading(prev => ({ ...prev, quoteResponses: true }));
@@ -247,6 +231,7 @@ useEffect(() => {
       setLoading(prev => ({ ...prev, quoteResponses: false }));
     }
   };
+
   const createQuoteRequest = async () => {
     try {
       const requestData = {
@@ -332,6 +317,7 @@ useEffect(() => {
       setError("Failed to submit quote response. Please try again.");
     }
   };
+
   const acceptQuoteResponse = async (responseId) => {
     try {
       await axios.post(`${backendURL}/api/quote-responses/${responseId}/accept`);
@@ -348,10 +334,12 @@ useEffect(() => {
       setError("Failed to accept quote response. Please try again.");
     }
   };
+
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
   };
+
   const handleRequestInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     
@@ -380,6 +368,7 @@ useEffect(() => {
       }));
     }
   };
+
   const handleResponseInputChange = (e) => {
     const { name, value } = e.target;
     setNewQuoteResponse(prev => ({
@@ -392,6 +381,7 @@ useEffect(() => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString();
   };
+
   const formatCurrency = (amount, currency) => {
     if (!amount) return "N/A";
     return new Intl.NumberFormat('en-IN', {
@@ -399,6 +389,7 @@ useEffect(() => {
       currency: currency || 'INR'
     }).format(amount);
   };
+
   const filteredQuoteRequests = quoteRequests.filter(request => {
     if (!filters.searchQuery) return true;
     
@@ -416,6 +407,7 @@ useEffect(() => {
     return (
       <div className="quote-container">
         <div className="loading-fullscreen">
+          <div className="loading-spinner"></div>
           <p>Loading user information...</p>
         </div>
       </div>
@@ -425,7 +417,7 @@ useEffect(() => {
   if (!currentUser) {
     return (
       <div className="quote-container">
-        <div className="error-banner">
+        <div className="alert error">
           <span>Please log in to access quotes</span>
         </div>
       </div>
@@ -435,7 +427,7 @@ useEffect(() => {
   return (
     <div className="quote-container">
       {error && (
-        <div className="error-banner">
+        <div className="alert error">
           <div>
             <span>{error}</span>
             <button 
@@ -454,7 +446,7 @@ useEffect(() => {
       )}
       
       {success && (
-        <div className="success-banner">
+        <div className="alert success">
           <span>{success}</span>
           <button onClick={() => setSuccess(null)}>×</button>
         </div>
@@ -494,9 +486,6 @@ useEffect(() => {
           </button>
         )}
       </div>
-
-      
-      {/* {console.log('Current user:', currentUser)} */}
 
       {activeTab === "browse" && (currentUser.role === "freight-forwarder" || currentUser.role === "transporter") && (
         <div className="tab-content">
@@ -577,7 +566,10 @@ useEffect(() => {
           </div>
           
           {loading.quoteRequests ? (
-            <div className="loading">Loading quote requests...</div>
+            <div className="loading">
+              <div className="loading-spinner"></div>
+              <p>Loading quote requests...</p>
+            </div>
           ) : filteredQuoteRequests.length === 0 ? (
             <div className="empty-state">
               <h3>No quote requests available</h3>
@@ -643,10 +635,8 @@ useEffect(() => {
         </div>
       )}
 
-      {/* My Requests Tab (for companies) */}
       {activeTab === "myRequests" && currentUser.role === "company" && (
         <div className="tab-content">
-          {/* FIXED: Only show Create button for company role */}
           <div className="create-quote-btn-container">
             <button 
               className="create-quote-btn"
@@ -657,7 +647,10 @@ useEffect(() => {
           </div>
           
           {loading.myQuoteRequests ? (
-            <div className="loading">Loading your quote requests...</div>
+            <div className="loading">
+              <div className="loading-spinner"></div>
+              <p>Loading your quote requests...</p>
+            </div>
           ) : myQuoteRequests.length === 0 ? (
             <div className="empty-state">
               <h3>You haven't created any quote requests yet</h3>
@@ -720,12 +713,13 @@ useEffect(() => {
         </div>
       )}
 
-      {/* My Responses Tab (for freight forwarders/transporters) */}
       {activeTab === "myResponses" && (currentUser.role === "freight-forwarder" || currentUser.role === "transporter") && (
         <div className="tab-content">
-          {/* FIXED: Hide Create button for non-company roles */}
           {loading.myQuoteResponses ? (
-            <div className="loading">Loading your quote responses...</div>
+            <div className="loading">
+              <div className="loading-spinner"></div>
+              <p>Loading your quote responses...</p>
+            </div>
           ) : myQuoteResponses.length === 0 ? (
             <div className="empty-state">
               <h3>You haven't submitted any quote responses yet</h3>
@@ -784,7 +778,7 @@ useEffect(() => {
         </div>
       )}
 
-      {/* Create Quote Request Modal - FIXED: Added all required fields */}
+      {/* Create Quote Request Modal */}
       {showCreateModal && (
         <div className="modal-overlay">
           <div className="modal-content large-modal">
@@ -1154,7 +1148,10 @@ useEffect(() => {
             <p>{selectedRequest.pickupLocation} → {selectedRequest.deliveryLocation}</p>
             
             {loading.quoteResponses ? (
-              <div className="loading">Loading quotes...</div>
+              <div className="loading">
+                <div className="loading-spinner"></div>
+                <p>Loading quotes...</p>
+              </div>
             ) : quoteResponses.length > 0 ? (
               <div className="quotes-grid">
                 {quoteResponses.map(response => (
@@ -1162,62 +1159,62 @@ useEffect(() => {
                     <div className="quote-header">
                       <h3>Quote from {response.responder?.companyName}</h3>
                       <span className={`status-badge status-${response.status}`}>
-                                             {response.status}
-                    </span>
-                  </div>
-                  
-                  <div className="quote-details">
-                    <div className="quote-meta">
-                      <div className="meta-item">
-                        <span className="label">Quote Amount:</span>
-                        <span className="amount">{formatCurrency(response.quoteAmount, response.currency)}</span>
-                      </div>
-                      <div className="meta-item">
-                        <span className="label">Valid Until:</span>
-                        <span>{formatDate(response.validity)}</span>
-                      </div>
-                      <div className="meta-item">
-                        <span className="label">Estimated Delivery:</span>
-                        <span>{response.estimatedDeliveryDays ? `${response.estimatedDeliveryDays} days` : "N/A"}</span>
-                      </div>
-                      {response.notes && (
-                        <div className="meta-item full-width">
-                          <span className="label">Notes:</span>
-                          <span>{response.notes}</span>
-                        </div>
-                      )}
-                      {response.termsAndConditions && (
-                        <div className="meta-item full-width">
-                          <span className="label">Terms:</span>
-                          <span>{response.termsAndConditions}</span>
-                        </div>
-                      )}
+                        {response.status}
+                      </span>
                     </div>
                     
-                    <div className="company-info">
-                      <span className="company-name">From: {response.responder?.companyName || "Unknown Transporter"}</span>
+                    <div className="quote-details">
+                      <div className="quote-meta">
+                        <div className="meta-item">
+                          <span className="label">Quote Amount:</span>
+                          <span className="amount">{formatCurrency(response.quoteAmount, response.currency)}</span>
+                        </div>
+                        <div className="meta-item">
+                          <span className="label">Valid Until:</span>
+                          <span>{formatDate(response.validity)}</span>
+                        </div>
+                        <div className="meta-item">
+                          <span className="label">Estimated Delivery:</span>
+                          <span>{response.estimatedDeliveryDays ? `${response.estimatedDeliveryDays} days` : "N/A"}</span>
+                        </div>
+                        {response.notes && (
+                          <div className="meta-item full-width">
+                            <span className="label">Notes:</span>
+                            <span>{response.notes}</span>
+                          </div>
+                        )}
+                        {response.termsAndConditions && (
+                          <div className="meta-item full-width">
+                            <span className="label">Terms:</span>
+                            <span>{response.termsAndConditions}</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="company-info">
+                        <span className="company-name">From: {response.responder?.companyName || "Unknown Transporter"}</span>
+                      </div>
                     </div>
+                    
+                    {response.status === "pending" && selectedRequest.status === "open" && (
+                      <div className="quote-actions">
+                        <button 
+                          className="accept-btn"
+                          onClick={() => acceptQuoteResponse(response._id)}
+                        >
+                          Accept Quote
+                        </button>
+                      </div>
+                    )}
+                    
+                    {response.status === "accepted" && (
+                      <div className="accepted-badge">
+                        ✓ Accepted
+                      </div>
+                    )}
                   </div>
-                  
-                  {response.status === "pending" && selectedRequest.status === "open" && (
-                    <div className="quote-actions">
-                      <button 
-                        className="accept-btn"
-                        onClick={() => acceptQuoteResponse(response._id)}
-                      >
-                        Accept Quote
-                      </button>
-                    </div>
-                  )}
-                  
-                  {response.status === "accepted" && (
-                    <div className="accepted-badge">
-                      ✓ Accepted
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
             ) : (
               <div className="empty-state">
                 <h3>No quotes received yet</h3>
